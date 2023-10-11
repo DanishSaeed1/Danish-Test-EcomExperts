@@ -1,3 +1,4 @@
+const FREE_PRODUCT_VARIANT_ID = 44107934007535;
 if (!customElements.get('product-form')) {
   customElements.define(
     'product-form',
@@ -56,20 +57,14 @@ if (!customElements.get('product-form')) {
                 method: 'GET'
               });
               cart = await cart.json();
-              var add_free_product = true;
-              for(var i =0;i<cart.items.length;++i){
-                if(cart.items[i].variant_id == 44107934007535){
-                  add_free_product = false;
-                }
+
+              const giftAlreadyAdded = cart.items.find(item => item.variant_id == FREE_PRODUCT_VARIANT_ID);
+              if(!giftAlreadyAdded){
+                addBundleProduct({
+                  'id':FREE_PRODUCT_VARIANT_ID,
+                  'quantity': 1
+                });
               }
-              var addData = {
-                'id':44107934007535,
-                'quantity': 1
-              };
-              if(add_free_product){
-                add_bundle_product(addData);
-              }
-              
             }
             if (response.status) {
               publish(PUB_SUB_EVENTS.cartError, {
@@ -141,9 +136,9 @@ if (!customElements.get('product-form')) {
 }
 
 
-function add_bundle_product(addData){
+function addBundleProduct(productData){
   fetch('/cart/add.js', {
-    body: JSON.stringify(addData),
+    body: JSON.stringify(productData),
     credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
@@ -152,10 +147,7 @@ function add_bundle_product(addData){
     method: 'POST'
   }).then(function(response) {
     return response.json();
-  }).then(function(json) {
-   
   }).catch(function(err) {
-   
     console.error(err)
   });
 }
